@@ -10,8 +10,16 @@ license=('BSD')
 depends=()
 provides=("$pkgname")
 conflicts=("$pkgname")
-source=("https://github.com/aquefir/$pkgname/archive/mk-v$pkgver.tar.gz" 'aquefir.sh')
-sha1sums=('9f98d58e62f7609955187750b4f983d8c1a72a04' 'SKIP')
+makedepends=('unzip')
+source=("https://github.com/aquefir/$pkgname/archive/mk-v$pkgver.tar.gz" 'aquefir.sh' 'change-stderr.patch')
+sha1sums=('9f98d58e62f7609955187750b4f983d8c1a72a04'
+		  'SKIP'
+		  '62ad2c127850c81b94d0c59f34ada131fba034ca')
+
+prepare() {
+  cd "$srcdir/$pkgname-mk-v$pkgver"
+  patch -Np1 -i ${srcdir}/change-stderr.patch
+}
 
 build() {
   cd "$srcdir/$pkgname-mk-v$pkgver"

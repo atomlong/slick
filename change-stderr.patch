@@ -1,0 +1,223 @@
+diff -durN slick-mk-v1.3.7.orig/util/getcosmo.sh slick-mk-v1.3.7/util/getcosmo.sh
+--- slick-mk-v1.3.7.orig/util/getcosmo.sh	2021-05-29 11:32:28.000000000 +0800
++++ slick-mk-v1.3.7/util/getcosmo.sh	2021-09-12 11:06:07.940800500 +0800
+@@ -8,27 +8,27 @@
+ _echo='/bin/echo';
+ 
+ command -v curl >/dev/null 2>&1 || { \
+-	${_echo} 'curl was not found on your system. Exiting...' >/dev/stderr; \
++	${_echo} 'curl was not found on your system. Exiting...' >&2; \
+ 	exit 127; }
+ command -v unzip >/dev/null 2>&1 || { \
+-	${_echo} 'unzip was not found on your system. Exiting...' >/dev/stderr; \
++	${_echo} 'unzip was not found on your system. Exiting...' >&2; \
+ 	exit 127; }
+ if test "$(uname -s)" = 'Darwin'; then
+ 	command -v shasum >/dev/null 2>&1 || {\
+ 		${_echo} 'shasum was not found on your system. Exiting...' \
+-			>/dev/stderr; exit 127; }
++			>&2; exit 127; }
+ 	_sha256='shasum -a 256'
+ else
+ 	command -v sha256sum >/dev/null 2>&1 || {\
+ 		${_echo} 'sha256sum was not found on your system. Exiting...' \
+-			>/dev/stderr; exit 127; }
++			>&2; exit 127; }
+ 	_sha256=sha256sum
+ fi
+ 
+ if [ ! -d "${_root}" ] && [ ! -h "${_root}" ]; then
+ 	if [ -f "${_root}" ]; then
+ 		${_echo} "output folder \"${_root}\" is not a directory or a symbolic" \
+-			' link. Exiting...' >/dev/stderr;
++			' link. Exiting...' >&2;
+ 		exit 127;
+ 	fi
+ 	mkdir -p "${_root}"; # -p for when root is multiple levels deep
+@@ -36,67 +36,67 @@
+ 
+ if [ -f "${_root}/cosmo.zip" ]; then
+ 	${_echo} 'Cosmopolitan amalgamated binaries already downloaded.' \
+-	'Skipping...' >/dev/stderr;
++	'Skipping...' >&2;
+ else
+ 	${_echo} -n 'Downloading the Cosmopolitan amalgamated binaries... ' \
+-	>/dev/stderr;
++	>&2;
+ 	curl -sD ${_root}/headers.tmp -o "${_root}/cosmo.zip" \
+ 		https://justine.lol/cosmopolitan/cosmopolitan-amalgamation-1.0.zip;
+ 	_x=$?;
+ 	if [ ! -f "${_root}/headers.tmp" ]; then
+ 		${_echo} -e "failed!\n${_root}/headers.tmp was not found on disk." \
+-		' Exiting...' >/dev/stderr;
++		' Exiting...' >&2;
+ 		exit 127;
+ 	elif [ "$(cat "${_root}/headers.tmp" | head -n 1 | awk '{print $2}')" \
+ 	!= '200' ]; then
+ 		${_echo} -e "failed!\nHTTP status code was $(cat \
+ 		"${_root}/headers.tmp" | head -n 1 | awk '{print $2}'). Exiting..." \
+-		>/dev/stderr;
++		>&2;
+ 		exit 127;
+ 	elif [ "$_x" != '0' ]; then
+-		${_echo} -e "failed!\nExit code was $_x. Exiting..." >/dev/stderr;
++		${_echo} -e "failed!\nExit code was $_x. Exiting..." >&2;
+ 		exit 127;
+ 	fi
+-	${_echo} 'done.' >/dev/stderr;
++	${_echo} 'done.' >&2;
+ fi
+ 
+-${_echo} -n 'Verifying the integrity of the archive... ' >/dev/stderr;
++${_echo} -n 'Verifying the integrity of the archive... ' >&2;
+ if [ "$_sum" != \
+ "$(${_sha256} "${_root}/cosmo.zip" | awk '{print $1}')" ]; then
+ 	${_echo} -e 'failed!\nSHA2-256 checksums did not match. Exiting...' \
+-	>/dev/stderr;
++	>&2;
+ 	exit 127;
+ fi
+ 
+-${_echo} 'passed!' >/dev/stderr;
++${_echo} 'passed!' >&2;
+ 
+ if [ -d "${_root}/cosmo" ]; then
+ 	${_echo} 'Cosmopolitan extract directory already exists. Skipping...' \
+-	>/dev/stderr;
++	>&2;
+ else
+-	${_echo} -n 'Making Cosmopolitan extract directory... ' >/dev/stderr;
++	${_echo} -n 'Making Cosmopolitan extract directory... ' >&2;
+ 	mkdir "${_root}/cosmo";
+ 	_x=$?;
+ 	if [ "$_x" != '0' ]; then
+-		${_echo} -e "failed!\nExit code was $_x. Exiting..." >/dev/stderr;
++		${_echo} -e "failed!\nExit code was $_x. Exiting..." >&2;
+ 		exit 127;
+ 	fi
+-	${_echo} 'done.' >/dev/stderr;
++	${_echo} 'done.' >&2;
+ fi
+ 
+-${_echo} -n 'Extracting the binaries... ' >/dev/stderr;
++${_echo} -n 'Extracting the binaries... ' >&2;
+ unzip -qu "${_root}/cosmo.zip" -d "${_root}/cosmo";
+ _x=$?;
+ 
+ if [ "$_x" = '0' ]; then
+-	${_echo} 'done.' >/dev/stderr;
++	${_echo} 'done.' >&2;
+ else
+-	${_echo} -e "failed!\nExit code was $_x. Exiting..." >/dev/stderr;
++	${_echo} -e "failed!\nExit code was $_x. Exiting..." >&2;
+ 	exit 127;
+ fi
+ 
+-${_echo} -n 'Cleaning up... ' >/dev/stderr;
++${_echo} -n 'Cleaning up... ' >&2;
+ rm -f "${_root}/headers.tmp";
+-${_echo} 'done.' >/dev/stderr;
++${_echo} 'done.' >&2;
+ 
+ unset _x _sum _root _echo;
+diff -durN slick-mk-v1.3.7.orig/util/install.sh slick-mk-v1.3.7/util/install.sh
+--- slick-mk-v1.3.7.orig/util/install.sh	2021-05-29 11:32:28.000000000 +0800
++++ slick-mk-v1.3.7/util/install.sh	2021-09-12 11:06:07.994188000 +0800
+@@ -18,12 +18,12 @@
+ 	_prefix="${PREFIX}";
+ fi
+ 
+-${_echo} -n 'Creating folder hierarchies...' >/dev/stderr;
++${_echo} -n 'Creating folder hierarchies...' >&2;
+ ${_sudo} mkdir -p "${_prefix}/opt/aq/lib/slick/cosmo";
+ ${_sudo} mkdir -p "${_prefix}/opt/aq/lib/slick/ibmpc";
+-${_echo} ' done.' >/dev/stderr;
++${_echo} ' done.' >&2;
+ 
+-${_echo} -n 'Copying Cosmopolitan files...' >/dev/stderr;
++${_echo} -n 'Copying Cosmopolitan files...' >&2;
+ ${_sudo} cp build/cosmo/ape.lds "${_prefix}/opt/aq/lib/slick/cosmo/ape.lds";
+ ${_sudo} cp build/cosmo/ape.o "${_prefix}/opt/aq/lib/slick/cosmo/ape.o";
+ ${_sudo} cp build/cosmo/cosmopolitan.a \
+@@ -31,23 +31,23 @@
+ ${_sudo} cp build/cosmo/cosmopolitan.h \
+ 	"${_prefix}/opt/aq/lib/slick/cosmo/cosmopolitan.h";
+ ${_sudo} cp build/cosmo/crt.o "${_prefix}/opt/aq/lib/slick/cosmo/crt.o";
+-${_echo} ' done.' >/dev/stderr;
++${_echo} ' done.' >&2;
+ 
+-${_echo} -n 'Copying IBM-PC files...' >/dev/stderr;
++${_echo} -n 'Copying IBM-PC files...' >&2;
+ ${_sudo} cp build/ibmpc/crt0.o "${_prefix}/opt/aq/lib/slick/ibmpc/crt0.o";
+ ${_sudo} cp src/ibmpc/ibmpc.ld "${_prefix}/opt/aq/lib/slick/ibmpc/ibmpc.ld";
+-${_echo} ' done.' >/dev/stderr;
++${_echo} ' done.' >&2;
+ 
+-${_echo} -n 'Copying the Makefiles...' >/dev/stderr;
++${_echo} -n 'Copying the Makefiles...' >&2;
+ ${_sudo} cp src/base.mk "${_prefix}/opt/aq/lib/slick/base.mk";
+ ${_sudo} cp src/targets.mk "${_prefix}/opt/aq/lib/slick/targets.mk";
+-${_echo} ' done.' >/dev/stderr;
++${_echo} ' done.' >&2;
+ 
+ [ ! -d "${_prefix}/etc/profile.d" ] || { ${_echo} -n \
+-	'Copying profile script addenda...' >/dev/stderr; \
++	'Copying profile script addenda...' >&2; \
+ 	${_sudo} cp src/aquefir.sh "${_prefix}/etc/profile.d/aquefir.sh" && \
+-	${_echo} ' done.' >/dev/stderr; }
++	${_echo} ' done.' >&2; }
+ 
+-${_echo} 'All done. Exiting...' >/dev/stderr;
++${_echo} 'All done. Exiting...' >&2;
+ 
+ unset _echo _sudo _prefix;
+diff -durN slick-mk-v1.3.7.orig/util/mkibmpc.sh slick-mk-v1.3.7/util/mkibmpc.sh
+--- slick-mk-v1.3.7.orig/util/mkibmpc.sh	2021-05-29 11:32:28.000000000 +0800
++++ slick-mk-v1.3.7/util/mkibmpc.sh	2021-09-12 11:06:08.056693100 +0800
+@@ -8,7 +8,7 @@
+ 	if [ ! -d '/usr/local/opt/x86_64-elf-binutils/bin' ]; then
+ 		${_echo} 'as was not found on your system.\nRun' \
+ 		'‘brew install x86_64-elf-binutils’ to fix this. Exiting...' \
+-		>/dev/stderr;
++		>&2;
+ 		exit 127;
+ 	fi
+ 	_as='/usr/local/opt/x86_64-elf-binutils/bin/x86_64-elf-as';
+@@ -18,31 +18,31 @@
+ 
+ # need GNU as for creating crt0.o
+ command -v "${_as}" >/dev/null 2>&1 || { \
+-	${_echo} 'as was not found on your system. Exiting...' >/dev/stderr; \
++	${_echo} 'as was not found on your system. Exiting...' >&2; \
+ 	exit 127; }
+ 
+ if [ ! -d "${_root}" ] && [ ! -h "${_root}" ]; then
+ 	if [ -f "${_root}" ]; then
+ 		${_echo} "Output folder \"${_root}\" is a regular file. Exiting..." \
+-			>/dev/stderr;
++			>&2;
+ 		exit 127;
+ 	fi
+ 	mkdir -p "${_root}"; # -p for when root is multiple levels deep
+ fi
+ 
+ if [ -f "${_root}/crt0.o" ]; then
+-	${_echo} 'crt0 already assembled. Exiting...' >/dev/stderr;
++	${_echo} 'crt0 already assembled. Exiting...' >&2;
+ 	return 0;
+ fi
+ 
+-${_echo} -n 'Assembling crt0...' >/dev/stderr;
++${_echo} -n 'Assembling crt0...' >&2;
+ ${_as} --32 -march=i386 -o "${_root}/crt0.o" src/ibmpc/crt0.s >/dev/null 2>&1;
+ _x=$?;
+ 
+ if [ "$_x" = '0' ]; then
+-	${_echo} 'done.' >/dev/stderr;
++	${_echo} 'done.' >&2;
+ else
+-	${_echo} -e "failed!\nExit code was $_x. Exiting..." >/dev/stderr;
++	${_echo} -e "failed!\nExit code was $_x. Exiting..." >&2;
+ 	exit 127;
+ fi
+ 

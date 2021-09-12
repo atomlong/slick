@@ -5,12 +5,14 @@ pkgbase = slick
 	url = https://github.com/aquefir/slick
 	arch = any
 	license = BSD
+	makedepends = unzip
 	provides = slick
 	conflicts = slick
 	source = https://github.com/aquefir/slick/archive/mk-v1.3.7.tar.gz
 	source = aquefir.sh
+	source = change-stderr.patch
 	sha1sums = 9f98d58e62f7609955187750b4f983d8c1a72a04
 	sha1sums = SKIP
+	sha1sums = 62ad2c127850c81b94d0c59f34ada131fba034ca
 
 pkgname = slick
-
